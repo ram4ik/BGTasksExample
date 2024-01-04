@@ -6,17 +6,40 @@
 //
 
 import UIKit
+import BackgroundTasks
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-
+    
+    let taskId = "com.ri.BGTasksExample.backgroundTask"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+                
+        // Register handler for task
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: taskId, using: nil) { task in
+            
+            // Handle the task when its run
+            guard let task = task as? BGAppRefreshTask else { return }
+            self.handleTask(task: task)
+        }
+        
+        let count = UserDefaults.standard.integer(forKey: "task_run_count")
+        print("Task ran \(count) times!")
+        
         return true
     }
-
+    
+    private func handleTask(task: BGAppRefreshTask) {
+        let count = UserDefaults.standard.integer(forKey: "task_run_count")
+        UserDefaults.standard.set(count + 1, forKey: "task_run_count")
+        
+        task.expirationHandler = {
+            
+        }
+        
+        task.setTaskCompleted(success: true)
+    }
+    
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
